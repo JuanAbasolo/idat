@@ -1,0 +1,261 @@
+---
+title: "IDAT erabiltzeko beharrerako jarraibideak"
+output: 
+    rmarkdown::html_vignette:
+        toc: true
+        toc_depth: 3
+vignette: >
+  %\VignetteIndexEntry{IDAT erabiltzeko beharrerako jarraibideak}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(IDAT)
+```
+
+Etherpad @greenspan2008 erabilita jaits daitekeen `.etherpad` luzapeneko fitxategiaz idazkuntza prozesuaren zenbait ezaugarriren berri ematen ditzateke `IDAT` paketeak.
+
+## Idazketa prozesua aztertzeko oinarria: `f_IDAT()` funtzioa.
+
+Honek oinarrizko eraldaketa egiten du idazkuntza prozesua aztertzeko. Horretarako `etherpad` fitxategiak lokalean egon behar dueta haren kokapena eman behar zaio zati bitan: `kokapena` argudioak diotso zein karpetatan dagoen eta `fitxategia` argudioak fitxategiaren beraren izena. Barne funtzio batez elkarrekin lotzen ditu prozesamendua egiteko.
+
+```{r}
+o_idat <- f_IDAT('../inst/extdata/', 'txepetx-2-lo1uvq90o.etherpad')
+```
+
+Funtzioaren irteeran `list()` erako elementu bat jasotzen da bost elementu dituena:
+
+-   `pad`, bat luzerako karaktere bektorea, prozesatu den fitategiaren izena
+-   `testua`, bat luzerako karaktere bektorea, testuaren azken bertsioa.
+-   `df_aldaketak`, `tibble`/`data.frame` erako objektua. Testuaren eraikitze prozesuko erregistroen hurrenkera, hogei aldagaitan azaldua:
+    1.  `pad` prozesatutako fitxategiaren izena.
+    2.  `revs`, zenbatgarren erregistroa den.
+    3.  `changeset`, erregistroaren informazioa osorik
+    4.  `author`, aldaketak egin dituenaren identifikazio kodea, sistemak bestela identifikatu ezik ordenagailua eta nabigatzailea identifikatuta.
+    5.  `timestamp`, EPOC formatuan erregistroa noiz egin den (milisegundutan zehaztuta).
+    6.  `opt`, testuaren formatuaren inguruko informazioa
+    7.  `oldLen`, zein neurri izan duen testuak, karaktere kopuruan neurtuta.
+    8.  `newLen`, zenbat karaktereko aldea duen testu berriak (kopuru absolutua)
+    9.  `charBank`, dagokion erregistroan testurik gehitzen bada, zein den testu hori.
+    10. `text`, 100 erregistroan behin testuaren egoera (besteak `NA`).
+    11. `attribs`, 100 erregistroan behin testuaren formatu-ezaugarriak (besteak `NA`).
+    12. `noz`, aurreko `timestamp` aldagaikoa baina gizakiontzat irakurgarri, POSIXct formatuan.
+    13. `aldi`, egindako aurreko pausutik zenbat denbora pasatu den (milisegundutan kalkulatuta, `author` aldagaiaren arabera).
+    14. `azktex`, ea testurik gehitu den (`>`) ala ezabatu edo formatu aldaketarik egin den (`<`).
+    15. `bank_luzera`, zenbat karaktere gehitu den erregistro honetan.
+    16. `kok_lerru`, aldaketarik egin bada testuan, zein lerrotan egin den.
+    17. `kok_aurreko_kar_kop`, aldaketaren aurretik testuak zenbat karaktere dituen.
+    18. `kok_lerrun_nun`, aldaketa egiten den lerroan zenbatgarren karakterean egin den.
+    19. `kok_erlatiboa`, testuaren momentuko tamaina kontuan izanda, testuaren zein tokitan egiten den aldaketa.
+    20. `lerro_aldaketa`, zenbat lerroko aldea duen aurreko aldaketatik. Balio positiboak esan nahi du hurrengo lerro batean egin dela aldaketa, balio negatiboak aurreko lerroren batean ari dela eta 0k aurreko testuaren lerroan segitzen duela.
+-   `df_egileak`, `tibble`/`data.frame` erako objektua, egileak identifikatzeko sei aldagai dituena.
+    1.  `pad`, prozesatutako fitxategiaren izena.
+
+    2.  `colorId`, zerbitzariak `author` horri esleitutako kolore kodea. Automatikoki esleituz gero, zenbaki osoa izaten da, erabiltzaileak aukeratutakoa HEX kodeaz. Ezaugarri hori dela eta, aldagai hau karaktere erakoa edo numerikoa izan daiteke
+
+    3.  `name`, erabiltzaileak bere buruari izen bat esleitu bazaio, hemen agertuko da.
+
+    4.  `timestamp`, `author` hori zerbitzarian konektatutako unea EPOC formatuan.
+
+    5.  `author`, aldaketak egin dituenaren identifikazio kodea, sistemak bestela identifikatu ezik ordenagailua eta nabigatzailea identifikatuta.
+
+    6.  `noz`, aurreko `timestamp` aldagaikoa baina gizakiontzat irakurgarri, POSIXct formatuan.
+-   `df_pool`, `tibble`/`data.frame` erako objektua, testuari ezarritako formatuak identifikatzeko balio duena.
+    1.  `pad`, prozesatutako fitxategiaren izena.
+    2.  `var`, zein aldagaitako informazioa jasotzen duen atributuetan.\
+        Aldagai honek har ditzakeen balioak urriak dira:\
+        `author`, `bold`, `italic`, `list`, `insertorder` eta gutxi gehiago.
+    3.  `attrib`, aurreko `var` aldagaiak ze balio hartzen duen.
+-   `ni`, ezabatzea komeni daitekeen erabiltzaile baten `author` kodea.
+
+```{r}
+summary(o_idat)
+```
+
+## Zenbait zarata-datu kendu: `f_garbitu()` funtzioa
+
+Aurreko `f_IDAT()` funtzioak sortutako objektua iragazteko funtzioa. Garbitzeko aukerak hurrengoak dira:
+
+-   Etherpaden prozesua ezin segitu dakiokeena, hau da, luzera jakin bat baino handiagokoak. Horretarako `copypaste` aldagaia aldatu behar da lehenetsitako `FALSE`tik `TRUE`ra. Lehenetsitako luzera `n=7`k ematen du. Horren balioa ere alda daiteke.
+
+-   `author` aldagaiko balio jakin bi ezabatzeko aukera ematen du.
+
+    -   Zerbitzariak berak sortutakoa ezabatzeko `hutsa` aldagaiak `TRUE` balioa behar du. `FALSE`k ez luke ezabatuko.
+
+    -   Intereseko besteren bat ezabatu nahi bada, ikerlariak prestatuakoa edo irakasleak prestatutakoa ezabatzeko, esate baterako, `ni` aldagaiak `TRUE` balioa behar du eta `nirea` aldagaiak ezabatu nahi den `author` horren balioa komatxoen artean. `FALSE`k ez luke ezer ezabatuko.
+
+```{r}
+#| warning: false
+require(magrittr)
+
+o_idat$df_aldaketak |> 
+    nrow()
+
+require(magrittr)
+o_idat |>
+    f_garbitu(copypaste = TRUE) %>% `[[`('df_aldaketak') |> 
+    nrow()
+```
+
+## Egileak identifikatzeko hainbat bide: `f_IDentifikau()` funtzioa
+
+Funtzio honek aldagai bat gehitzen dio `f_IDAT()` funtzioak sortutako objektuko `df_aldaketak` data frameari, `egileak` izenekoa.
+
+Aldagai horretako balioak har ditzake irizpide batzuen arabera:
+
+-   `author` bakoitzeko kodea izan daiteke. `authorka = TRUE` da balio lehenetsia
+
+-   `name` aldagaiko informazioa erabil daiteke. Hori erabilgarria izan liteke ordenagailu batetik baino gehiagotik egile bakarrak idazten duenean. `nameka = FALSE` da balio lehenetsia
+
+-   Norberak emandako izen zerrenda bat erabilita. Izen zerrenda hori eman beharko zaio `author` aldagaiko mailen luzeran eta batzeko balioko luke. `egileak = NULL` da balio lehenetsia.
+
+-   Autorka edo izenka egin nahi bada, baina informazio pertsonala anonimo eginda, `anonimu = FALSE` lehenetsia `TRUE` baliora pasatu behar da. Izen anonimo horiek `E-1` kodeaz sortuko dira, zenbakiak ausaz esleituta.
+
+```{r}
+require(dplyr)
+o_idat$df_aldaketak |>
+    select(author) |>
+    head(10)
+f_IDentifikau(o_idat, anonimu = TRUE)$df_aldaketak |>
+    select(egileak) |>
+    head(10)
+```
+
+## Egileek jarraian idatzitakoak identifikatzeko: `f_ekitaldiak()` funtzioa
+
+Funtzio honek aldagai bat gehitzen dio `f_IDAT()` funtzioak sortutako objektuko `df_aldaketak` data frameari, `ekitaldia` izenekoa. Horrek ezarritako muga baten arabera, identifikatzen ditu `author` bakoitzak segidan idatzitako bitarteak, zenbakizko etiketa bat esleituta. Lehenetsitako muga segundu batekoa da, `muga = 1000` balioa emanda.
+
+```{r}
+# o_idat <- f_IDAT(fitxategia, kokapena)
+f_ekitaldiak(o_idat$df_aldaketak) |> 
+    group_by(ekitaldia) |> 
+    filter(n()>4) |> 
+    ungroup() |> 
+    select(ekitaldia, charBank) |> 
+    tail(10)
+```
+
+## Idazkuntza prozesua etiketatzeko hainbat bide: `f_idatzia()` funtzioa
+
+Funtzio honek aldagai bat gehitzen dio `f_IDAT()` funtzioak sortutako objektuko `df_aldaketak` data frameari, `idatzia` izenekoa. Aldagai horrek balio du egile bakoitzaren idazketa prozesua hainbat ezaugarriren arabera aztertzeko.
+
+Funtzioaren parametroek zehazten dute zein informazio bueltatuko den `idat` aldagaian.
+
+Egile baten testuaren azterketa inkrementala.
+
+### Irteerak
+
+#### Testu hutsa
+
+```{r}
+#| output: asis
+#| messages: false
+require(stringr)
+
+f_idatzia(o_idat$df_aldaketak,
+          lerru = F, etenak = F, ezabatuak = F, copypaste = F, lerroko_jauziak = F) |> suppressWarnings() |> 
+    filter(egileak == levels(egileak)[3]) |> 
+    select(idatzia) |> unlist() |> unname() |> 
+    paste(collapse = "") |> 
+    str_replace_all('\n\n\n', '\n\n') |> 
+    cat()
+```
+
+#### Lerroen informazioa
+
+```{r}
+#| echo: fenced
+#| output: asis
+f_idatzia(o_idat$df_aldaketak,
+          lerru = T, etenak = F, ezabatuak = F, copypaste = F, lerroko_jauziak = F) |> suppressWarnings() |> 
+    filter(egileak == levels(egileak)[3]) |> 
+    select(idatzia) |> unlist() |> unname() |> 
+    paste(collapse = "") |> 
+    str_replace_all('\n\n\n', '\n\n') |> 
+    cat()
+```
+
+#### Etenak, 20 seg
+
+Bost segundutik gorako etenak markatuta. Ustez, testuaren antolaketari begirakoak
+
+```{r}
+#| echo: fenced
+#| output: asis
+f_idatzia(o_idat$df_aldaketak, lerru = F, etenak = T, dm = 20000,
+          ezabatuak = F, copypaste = F, lerroko_jauziak = F) |> suppressWarnings() |> 
+    filter(egileak == levels(egileak)[3]) |> 
+    select(idatzia) |> unlist() |> unname() |> 
+    paste(collapse = "") |> 
+    str_replace_all('\n\n\n', '\n\n') |> 
+    cat()
+```
+
+#### Ezabatuak
+
+Ezabaketen markak (eta etenak 3 segundura)
+
+```{r}
+#| output: asis
+f_idatzia(o_idat$df_aldaketak, lerru = F, 
+          etenak = F, dm = 3000, ezabatuak = T,
+          copypaste = F, lerroko_jauziak = F) |> suppressWarnings() |> 
+    filter(egileak == levels(egileak)[3]) |> 
+    select(idatzia) |> unlist() |> unname() |> 
+    paste(collapse = "") |> 
+    str_replace_all('\n\n\n', '\n\n') |> 
+    cat()
+```
+
+#### Copy+Paste
+
+Beste nonbaitetik ekarritako testuak nabarmenduta
+
+```{r}
+#| output: asis
+f_idatzia(o_idat$df_aldaketak, lerru = F, 
+          etenak = F, dm = 20000, ezabatuak = F, copypaste = T,
+           lerroko_jauziak = F) |> suppressWarnings() |> 
+    filter(egileak == levels(egileak)[3]) |> 
+    select(idatzia) |> unlist() |> unname() |> 
+    paste(collapse = "") |> 
+    str_replace_all('\n\n\n', '\n\n') |> 
+    cat()
+```
+
+#### Lerro barruko jauziak
+
+Lerro barruan idazleak egindako saltuk nabarmentzeko. Ez da zorrotza egile askok batera idazten dabenean.
+
+```{r}
+#| output: asis
+f_idatzia(o_idat$df_aldaketak, lerru = T,
+          etenak = F, dm = 20000, 
+          ezabatuak = F, copypaste = F, lerroko_jauziak = T) |> suppressWarnings() |> 
+    filter(egileak == levels(egileak)[3]) |> 
+    select(idatzia) |> unlist() |> unname() |> 
+    paste(collapse = "") |> 
+    str_replace_all('\n\n\n', '\n') |> 
+    cat()
+```
+
+## Bestelako funtzioak
+
+`f_36_10era()` eta `f_epoc_ekarri()`
+
+Barneko funtzionamendurako beharrezko funtzioak. Erabiltzaileak erabil litzake `timestamp` lantzeko, `f_epoc_ekarri()` funtzioak EPOC formatuan emandakoa gizakiok irakurgarri egiten duelako. `opt` aldagaian zenbakiak 36ko oinarrian agertzen dira, horiek zenbakikuntza hamartarrera ekartzen ditu `f_36_10era()` funtzioak.
+
+## `o_idat` objektua
+
+`f_IDAT()` funtzioak sortutako objektua. Taldean egindako idatzia da.
+
+# Erreferentzia
