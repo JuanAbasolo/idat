@@ -1,0 +1,149 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# IDAT
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+IDAT (*Idazketan Aztertzeko Tresna*) erabil daiteke idazkuntza prozesua aztertzeko, Etherpad instantzia batean idatzitakoa aztertu eta analizatzeko.
+
+`.etherpad` fitxategiko datuak antolatzeko balio du horien informazioa aztertzeko.
+
+## Instalatzea
+
+You can install the development version of IDAT like so:
+
+``` r
+remotes::install_gitlab('JuanAbasolo/idat')
+```
+
+## Adibidea
+
+Oinarrizko erabileraren adibidea. 
+
+```{r example}
+library(IDAT)
+kokapena <- 'inst/extdata/'
+fitxategia <- 'txepetx-2-lo1uvq90o.etherpad'
+o_idat <- f_IDAT(kokapena, fitxategia)
+```
+
+Laburpena
+
+```{r cars}
+summary(o_idat)
+```
+
+Elementuak hauek dira:
+
+- `pad`, bat luzerako karaktere bektorea, prozesatu den fitategiaren izena
+- `testua`, bat luzerako karaktere bektorea, testuaren azken bertsioa.
+- `df_aldaketak`, `tibble`/`data.frame` erako objektua. Testuaren eraikitze prozesuko erregistroen hurrenkera, hogei aldagaitan azaldua.
+- `df_egileak`, `tibble`/`data.frame` erako objektua, egileak identifikatzeko sei aldagai dituena.
+- `df_pool`, `tibble`/`data.frame` erako objektua, testuari ezarritako formatuak identifikatzeko balio duena.
+- `ni`, ezabatzea komeni daitekeen erabiltzaile baten `author` kodea.
+
+Prozesuaren inguruko informazioa `df_aldaketak` objektuan dago
+
+## Informazioa garbitu
+
+Baliteke `.etherpad` fitxategiak duen hainbat informazio ez izatea esanguratsua. Esate baterako instantziak berak aurrez fitxategian eskaintzen duena edo ikertzaileak, irakasleak edo dena delakoak gehitua; informazio hori ezabatzeko `f_garbitu` erabil daiteke.
+
+```{r f_garbitu}
+require(dplyr) |> suppressMessages()
+o_idat$df_aldaketak |> 
+    summarise(egile_kopurua = unique(author) |> length(),
+              pausu_kopurua = n())
+
+o_idat$df_aldaketak |> 
+    f_garbitu() |> 
+    summarise(egile_kopurua = unique(author) |> length(),
+              pausu_kopurua = n())
+```
+
+
+## Egileak anonimo egin edo berrizendatu
+
+`.etherpad` fitxategiak gorde dezake egileak bere buruari emandako izena, baldin eta eman badu. Egileak emandako izen horien arabera identifikatu daitezke edo anonimotasunean landu ere bai. Horretarako f_IDentifikau funtzioa erabili behar da
+
+```{r}
+o_idat$df_aldaketak |> 
+    group_by(name) |> 
+    summarise(aldaketa_kopurua = n())
+
+o_idat$df_aldaketak |> 
+    f_IDentifikau(anonimu = TRUE) |> 
+    group_by(egileak) |> 
+    summarise(aldaketa_kopurua = n())
+```
+
+
+## Idazkuntza prozesuko testua eta etiketatzea
+
+Egile bakoitzak ekarritako testuak ere azter daitezke hainbat elementu nabarmenduta:
+    
++ Ea zein lerrotan idatzi duen, `●3.Ln:` kodeaz
++ Ea zenbateko etenak egin dituen idaztalditik idaztaldira `<2.8seg>` erako kodeaz.
++ Ea zenbat ezabatu duen, `[←19]` moduko kodeaz. 
++ Ea paragrafoan / lerroan hurrengo kokapenean idazten duen ala jauziak egin dituen bertan barruan, honelako kodeaz: `[68↶][19↷]`.
++ Ea testua beste nonbaitetik hartu eta itsatsia den, honako kodeen artean markatuta `]■C+P⇒::` eta ` ::⇐C+P■ `.
+    
+Horiek denak banan banan zein denak batera eska daitezke `f_idatzia` funtzioa erabiliaz.
+
+```{r results='asis'}
+library(stringr) |> suppressMessages()
+f_idatzia(o_idat$df_aldaketak, lerru = TRUE, 
+          etenak = TRUE, dm = 2000, 
+          ezabatuak = TRUE, copypaste = TRUE,
+          lerroko_jauziak = TRUE) |> # suppressWarnings() |> 
+    filter(egileak == levels(egileak)[3]) |> 
+    select(idatzia) |> unlist() |> unname() |> 
+    paste(collapse = "") |> 
+    str_replace_all('\n\n\n', '\n\n') |> 
+    cat()
+```
+
+## Irudiak sortzea
+
+Berez, irudiak sortzeko ez da programazio berezirik IDATen, `ggplot2`eta beste erabil daiteke horren informazioaren irudiak aztertzeko.
+
+Hurrengoa talde lan baten irudia da.
+
+```{r topografia, echo = TRUE}
+require(ggplot2) |> suppressMessages()
+# KODEA
+```
+
+
+```{r fig-fullwidth, fig.width = 10, fig.height = 5, fig.fullwidth = TRUE, fig.cap = "Talde lan ez onegi baten topografia", warning=FALSE, message=FALSE, cache=TRUE}
+o_idat$df_aldaketak |>
+    f_garbitu() |> 
+    f_IDentifikau(anonimu = T) |> 
+    mutate(norabidea = ifelse(azktex=='<', 'kendu', 'gehitu')) |>
+    ggplot(aes(x = revs, y = kok_lerru, color = egileak)) +
+    geom_point(aes(size = newLen, shape = norabidea)) +
+    geom_line(lty = 3) + scale_y_reverse() +
+    labs(title = 'Testuaren eraikuntzaren topografia',
+         subtitle = 'Aldaketen kokapena eta egileak prozesuan',
+         y = 'Testuaren lerroa',
+         x = 'Testuaren eraikuntzaren urratsen hurrenkera',
+         color = 'Taldekidea',
+         size = 'Zenbat kar.',
+         shape = 'Norabidea')
+```
+
+In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+

@@ -1,92 +1,236 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # IDAT
 
+<!-- badges: start -->
+<!-- badges: end -->
 
+IDAT (*Idazketan Aztertzeko Tresna*) erabil daiteke idazkuntza prozesua
+aztertzeko, Etherpad instantzia batean idatzitakoa aztertu eta
+analizatzeko.
 
-## Getting started
+`.etherpad` fitxategiko datuak antolatzeko balio du horien informazioa
+aztertzeko.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Instalatzea
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+You can install the development version of IDAT like so:
 
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/JuanAbasolo/idat.git
-git branch -M main
-git push -uf origin main
+``` r
+remotes::install_gitlab('JuanAbasolo/idat')
 ```
 
-## Integrate with your tools
+## Adibidea
 
-- [ ] [Set up project integrations](https://gitlab.com/JuanAbasolo/idat/-/settings/integrations)
+Oinarrizko erabileraren adibidea.
 
-## Collaborate with your team
+``` r
+library(IDAT)
+kokapena <- 'inst/extdata/'
+fitxategia <- 'txepetx-2-lo1uvq90o.etherpad'
+o_idat <- f_IDAT(kokapena, fitxategia)
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+Laburpena
 
-## Test and Deploy
+``` r
+summary(o_idat)
+#>              Length Class  Mode     
+#> pad           1     -none- character
+#> testua        1     -none- character
+#> df_aldaketak 21     tbl_df list     
+#> df_egileak    6     tbl_df list     
+#> df_pool       4     tbl_df list     
+#> ni            1     -none- character
+```
 
-Use the built-in continuous integration in GitLab.
+Elementuak hauek dira:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+- `pad`, bat luzerako karaktere bektorea, prozesatu den fitategiaren
+  izena
+- `testua`, bat luzerako karaktere bektorea, testuaren azken bertsioa.
+- `df_aldaketak`, `tibble`/`data.frame` erako objektua. Testuaren
+  eraikitze prozesuko erregistroen hurrenkera, hogei aldagaitan azaldua.
+- `df_egileak`, `tibble`/`data.frame` erako objektua, egileak
+  identifikatzeko sei aldagai dituena.
+- `df_pool`, `tibble`/`data.frame` erako objektua, testuari ezarritako
+  formatuak identifikatzeko balio duena.
+- `ni`, ezabatzea komeni daitekeen erabiltzaile baten `author` kodea.
 
-***
+Prozesuaren inguruko informazioa `df_aldaketak` objektuan dago
 
-# Editing this README
+## Informazioa garbitu
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Baliteke `.etherpad` fitxategiak duen hainbat informazio ez izatea
+esanguratsua. Esate baterako instantziak berak aurrez fitxategian
+eskaintzen duena edo ikertzaileak, irakasleak edo dena delakoak gehitua;
+informazio hori ezabatzeko `f_garbitu` erabil daiteke.
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+``` r
+require(dplyr) |> suppressMessages()
+o_idat$df_aldaketak |> 
+    summarise(egile_kopurua = unique(author) |> length(),
+              pausu_kopurua = n())
+#> # A tibble: 1 × 2
+#>   egile_kopurua pausu_kopurua
+#>           <int>         <int>
+#> 1             7          1771
 
-## Name
-Choose a self-explaining name for your project.
+o_idat$df_aldaketak |> 
+    f_garbitu() |> 
+    summarise(egile_kopurua = unique(author) |> length(),
+              pausu_kopurua = n())
+#> # A tibble: 1 × 2
+#>   egile_kopurua pausu_kopurua
+#>           <int>         <int>
+#> 1             5          1766
+```
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+## Egileak anonimo egin edo berrizendatu
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+`.etherpad` fitxategiak gorde dezake egileak bere buruari emandako
+izena, baldin eta eman badu. Egileak emandako izen horien arabera
+identifikatu daitezke edo anonimotasunean landu ere bai. Horretarako
+f_IDentifikau funtzioa erabili behar da
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+``` r
+o_idat$df_aldaketak |> 
+    group_by(name) |> 
+    summarise(aldaketa_kopurua = n())
+#> # A tibble: 7 × 2
+#>   name                 aldaketa_kopurua
+#>   <fct>                           <int>
+#> 1 "Ainara Herrero"                  434
+#> 2 "Graciela Hernández"              206
+#> 3 "MaisuJuan"                         2
+#> 4 "Maria Abadia"                    579
+#> 5 "Sorkunde Valle "                 342
+#> 6 "Xabier Paez"                     205
+#> 7  <NA>                               3
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+o_idat$df_aldaketak |> 
+    f_IDentifikau(anonimu = TRUE) |> 
+    group_by(egileak) |> 
+    summarise(aldaketa_kopurua = n())
+#> # A tibble: 7 × 2
+#>   egileak aldaketa_kopurua
+#>   <fct>              <int>
+#> 1 E-1                  579
+#> 2 E-2                  206
+#> 3 E-3                    3
+#> 4 E-4                    2
+#> 5 E-5                  205
+#> 6 E-6                  342
+#> 7 E-7                  434
+```
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Idazkuntza prozesuko testua eta etiketatzea
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Egile bakoitzak ekarritako testuak ere azter daitezke hainbat elementu
+nabarmenduta:
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+- Ea zein lerrotan idatzi duen, `●3.Ln:` kodeaz
+- Ea zenbateko etenak egin dituen idaztalditik idaztaldira `<2.8seg>`
+  erako kodeaz.
+- Ea zenbat ezabatu duen, `[←19]` moduko kodeaz.
+- Ea paragrafoan / lerroan hurrengo kokapenean idazten duen ala jauziak
+  egin dituen bertan barruan, honelako kodeaz: `[68↶][19↷]`.
+- Ea testua beste nonbaitetik hartu eta itsatsia den, honako kodeen
+  artean markatuta `]■C+P⇒::` eta `::⇐C+P■`.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Horiek denak banan banan zein denak batera eska daitezke `f_idatzia`
+funtzioa erabiliaz.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+``` r
+library(stringr) |> suppressMessages()
+f_idatzia(o_idat$df_aldaketak, lerru = TRUE, 
+          etenak = TRUE, dm = 2000, 
+          ezabatuak = TRUE, copypaste = TRUE,
+          lerroko_jauziak = TRUE) |> # suppressWarnings() |> 
+    filter(egileak == levels(egileak)[3]) |> 
+    select(idatzia) |> unlist() |> unname() |> 
+    paste(collapse = "") |> 
+    str_replace_all('\n\n\n', '\n\n') |> 
+    cat()
+#> Warning in f_idatzia(o_idat$df_aldaketak, lerru = TRUE, etenak = TRUE, dm = 2000, : 
+#> Lerro arteko jauzietan eta lerro barrukoetan 26 datu galdu egon dira; beraz, horrenbeste marka falta daitekez
+#> Warning in f_idatzia(o_idat$df_aldaketak, lerru = TRUE, etenak = TRUE, dm = 2000, : Etenenen marketan ere, 7 datu falta dira; beraz, horrenbeste eten markatzeke egon daitekez
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+?●Ln:?::\[←32\]\<3.1seg\>\[32↷\]■C+P⇒::233zbk/artikuluak/34323330.pdf
+↩::⇐C+P■
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+●7Ln:2⇓::\<9m.20seg\>\[39↶\]a■C+P⇒::bxklbawsdxk::⇐C+P■
+bs\[←1\]\[←1\]\[←6\]\[5↶\]\[←3\]\[←3\]\<2.8seg\>\[←19\]\[390↷\]
 
-## License
-For open source projects, say how it is licensed.
+●3.Ln:4⇑::\<4m.42seg\>\[137↶\]■C+P⇒::<https://ojs.ehu.eus/index.php/ASJU/index>::⇐C+P■
+\[250↶\]
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+●6Ln:3⇓::\<22m.32seg\>\[82↷\]
+
+●7Ln:1⇓::\<2.1seg\>\[581↷\]E\[705↶\]AE \[←1\]\[←1\]n
+\<6.3seg\>d■C+P⇒::agoen ego era ::⇐C+P■
+erreparat\[←1\]\[←6\]\[5↶\]\[←6\]\[←6\]\[←6\]\[←3\]\<2.3seg\>
+\[←1\]\[←1\]\[705↷\]
+
+●5.Ln:2⇑::\<6m.9seg\>\[673↶\]h\<3.6seg\>\[←1\]\[←1\]zkuntza\[9↶\]■C+P⇒::Hizkuntzaren
+::⇐C+P■ \[9↷\]od\[←1\]fizial ditugu\<3.1seg\>\[←1\]\[28↶\]
+hizkuntza\[9↶\]■C+P⇒::Hizkuntzaren od::⇐C+P■ \[9↷\]i\<12seg\>\[7↶\]
+\<7seg\> \<2.6seg\>ofizial
+i\<2.6seg\>ka\[←3\]\<15.2seg\>\[←8\]\[21↷\]\[←1\]\[7↷\]\<2.2seg\>\[25↶\]
+ofizial\<2m.16seg\>\[←1\]\[54↷\]\[←3\]\[←3\]\[←2\]\[←1\]ikastetxeetan bu
+\[←1\]\[←1\]i\<3seg\>\[←1\]\[7↶\]\<3.4seg\>\[7↷\]
+hi\[←1\]\[←1\]\<35seg\>\[←1\]\[26↷\]\[←2\]\<1m.55seg\>\[23↶\]
+
+●7Ln:2⇓::\<1156m.17seg\>\[←19\]\[68↶\]\[19↷\]ofizial \<4.9seg\>nag
+
+●6.Ln:1⇑::ysi\[←1\]\[←2\]udi\[←2\]si dira\<4.8seg\>\[←1\],
+\<4.8seg\>\[33↷\] ere
+
+●8Ln:2⇓::\<4m.38seg\>\[121↷\]Lehenik eta behin, \<5.2seg\>kontuan
+hartz\[←1\]zekoa dugu egoera, \<4.5seg\>ahoz eta idatzz\[←1\]\[←1\]ziz
+\<5.1seg\>ematen ari den. \<3.7seg\>behin\[←2\]\[←3\]Behin horia
+ikui\[←1\]sita, \<5.5seg\>egoera \<8seg\>modu informalean
+\<4.3seg\>ematen den
+
+## Irudiak sortzea
+
+Berez, irudiak sortzeko ez da programazio berezirik IDATen, `ggplot2`eta
+beste erabil daiteke horren informazioaren irudiak aztertzeko.
+
+Hurrengoa talde lan baten irudia da.
+
+``` r
+require(ggplot2) |> suppressMessages()
+# KODEA
+```
+
+``` r
+o_idat$df_aldaketak |>
+    f_garbitu() |> 
+    f_IDentifikau(anonimu = T) |> 
+    mutate(norabidea = ifelse(azktex=='<', 'kendu', 'gehitu')) |>
+    ggplot(aes(x = revs, y = kok_lerru, color = egileak)) +
+    geom_point(aes(size = newLen, shape = norabidea)) +
+    geom_line(lty = 3) + scale_y_reverse() +
+    labs(title = 'Testuaren eraikuntzaren topografia',
+         subtitle = 'Aldaketen kokapena eta egileak prozesuan',
+         y = 'Testuaren lerroa',
+         x = 'Testuaren eraikuntzaren urratsen hurrenkera',
+         color = 'Taldekidea',
+         size = 'Zenbat kar.',
+         shape = 'Norabidea')
+```
+
+<div class="figure">
+
+<img src="man/figures/README-fig-fullwidth-1.png" alt="Talde lan ez onegi baten topografia" width="100%" />
+<p class="caption">
+Talde lan ez onegi baten topografia
+</p>
+
+</div>
+
+In that case, don’t forget to commit and push the resulting figure
+files, so they display on GitHub and CRAN.
