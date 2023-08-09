@@ -13,18 +13,24 @@ knitr::opts_chunk$set(
 )
 ```
 
-# IDAT
+# IDAT <img src="man/figures/logo.png" align="right" height="138" alt="" />
 
 <!-- badges: start -->
+
+```{r echo=FALSE}
+usethis::use_lifecycle_badge(stage = "experimental") |>
+  suppressMessages()
+```
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-IDAT (*Idazketan Aztertzeko Tresna*) erabil daiteke idazkuntza prozesua aztertzeko, Etherpad instantzia batean idatzitakoa aztertu eta analizatzeko.
+IDAT (*Idazketan Aztertzeko Tresna*) erabil daiteke idazkuntza prozesua aztertzeko, [Etherpad](https://etherpad.org/) instantzia batean idatzitakoa aztertu eta analizatzeko.
 
-`.etherpad` fitxategiko datuak antolatzeko balio du horien informazioa aztertzeko.
+`.etherpad` fitxategiko datuak antolatzeko balio du, horien informazioa aztertzeko.
 
 ## Instalatzea
 
-You can install the development version of IDAT like so:
+IDAT paketea GitLabeko [biltegi](https://gitlab.com/JuanAbasolo/idat)tik jaitsita instala dezakezu.
 
 ``` r
 remotes::install_gitlab('JuanAbasolo/idat')
@@ -36,8 +42,8 @@ Oinarrizko erabileraren adibidea.
 
 ```{r example}
 library(IDAT)
-kokapena <- 'inst/extdata/'
-fitxategia <- 'txepetx-2-lo1uvq90o.etherpad'
+kokapena <- "inst/extdata/"
+fitxategia <- "txepetx-2-lo1uvq90o.etherpad"
 o_idat <- f_IDAT(kokapena, fitxategia)
 ```
 
@@ -64,14 +70,18 @@ Baliteke `.etherpad` fitxategiak duen hainbat informazio ez izatea esanguratsua.
 
 ```{r f_garbitu}
 require(dplyr) |> suppressMessages()
-o_idat$df_aldaketak |> 
-    summarise(egile_kopurua = unique(author) |> length(),
-              pausu_kopurua = n())
+o_idat$df_aldaketak |>
+  summarise(
+    egile_kopurua = unique(author) |> length(),
+    pausu_kopurua = n()
+  )
 
-o_idat$df_aldaketak |> 
-    f_garbitu() |> 
-    summarise(egile_kopurua = unique(author) |> length(),
-              pausu_kopurua = n())
+o_idat$df_aldaketak |>
+  f_garbitu() |>
+  summarise(
+    egile_kopurua = unique(author) |> length(),
+    pausu_kopurua = n()
+  )
 ```
 
 
@@ -80,14 +90,14 @@ o_idat$df_aldaketak |>
 `.etherpad` fitxategiak gorde dezake egileak bere buruari emandako izena, baldin eta eman badu. Egileak emandako izen horien arabera identifikatu daitezke edo anonimotasunean landu ere bai. Horretarako f_IDentifikau funtzioa erabili behar da
 
 ```{r}
-o_idat$df_aldaketak |> 
-    group_by(name) |> 
-    summarise(aldaketa_kopurua = n())
+o_idat$df_aldaketak |>
+  group_by(name) |>
+  summarise(aldaketa_kopurua = n())
 
-o_idat$df_aldaketak |> 
-    f_IDentifikau(anonimu = TRUE) |> 
-    group_by(egileak) |> 
-    summarise(aldaketa_kopurua = n())
+o_idat$df_aldaketak |>
+  f_IDentifikau(anonimu = TRUE) |>
+  group_by(egileak) |>
+  summarise(aldaketa_kopurua = n())
 ```
 
 
@@ -105,15 +115,19 @@ Horiek denak banan banan zein denak batera eska daitezke `f_idatzia` funtzioa er
 
 ```{r results='asis'}
 library(stringr) |> suppressMessages()
-f_idatzia(o_idat$df_aldaketak, lerru = TRUE, 
-          etenak = TRUE, dm = 2000, 
-          ezabatuak = TRUE, copypaste = TRUE,
-          lerroko_jauziak = TRUE) |> # suppressWarnings() |> 
-    filter(egileak == levels(egileak)[3]) |> 
-    select(idatzia) |> unlist() |> unname() |> 
-    paste(collapse = "") |> 
-    str_replace_all('\n\n\n', '\n\n') |> 
-    cat()
+f_idatzia(o_idat$df_aldaketak,
+  lerru = TRUE,
+  etenak = TRUE, dm = 2000,
+  ezabatuak = TRUE, copypaste = TRUE,
+  lerroko_jauziak = TRUE
+) |> # suppressWarnings() |>
+  filter(egileak == levels(egileak)[3]) |>
+  select(idatzia) |>
+  unlist() |>
+  unname() |>
+  paste(collapse = "") |>
+  str_replace_all("\n\n\n", "\n\n") |>
+  cat()
 ```
 
 ## Irudiak sortzea
@@ -122,28 +136,30 @@ Berez, irudiak sortzeko ez da programazio berezirik IDATen, `ggplot2`eta beste e
 
 Hurrengoa talde lan baten irudia da.
 
-```{r topografia, echo = TRUE}
-require(ggplot2) |> suppressMessages()
-# KODEA
-```
-
-
 ```{r fig-fullwidth, fig.width = 10, fig.height = 5, fig.fullwidth = TRUE, fig.cap = "Talde lan ez onegi baten topografia", warning=FALSE, message=FALSE, cache=TRUE}
+require(ggplot2) |> suppressMessages()
 o_idat$df_aldaketak |>
-    f_garbitu() |> 
-    f_IDentifikau(anonimu = T) |> 
-    mutate(norabidea = ifelse(azktex=='<', 'kendu', 'gehitu')) |>
-    ggplot(aes(x = revs, y = kok_lerru, color = egileak)) +
-    geom_point(aes(size = newLen, shape = norabidea)) +
-    geom_line(lty = 3) + scale_y_reverse() +
-    labs(title = 'Testuaren eraikuntzaren topografia',
-         subtitle = 'Aldaketen kokapena eta egileak prozesuan',
-         y = 'Testuaren lerroa',
-         x = 'Testuaren eraikuntzaren urratsen hurrenkera',
-         color = 'Taldekidea',
-         size = 'Zenbat kar.',
-         shape = 'Norabidea')
+  f_garbitu() |>
+  f_IDentifikau(anonimu = T) |>
+  mutate(norabidea = ifelse(azktex == "<", "kendu", "gehitu")) |>
+  ggplot(aes(x = revs, y = kok_lerru, color = egileak)) +
+  geom_point(aes(size = newLen, shape = norabidea)) +
+  geom_line(lty = 3) +
+  scale_y_reverse() +
+  labs(
+    title = "Testuaren eraikuntzaren topografia",
+    subtitle = "Aldaketen kokapena eta egileak prozesuan",
+    y = "Testuaren lerroa",
+    x = "Testuaren eraikuntzaren urratsen hurrenkera",
+    color = "Taldekidea",
+    size = "Zenbat kar.",
+    shape = "Norabidea"
+  )
 ```
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+---
+
+Argitaratzeko prozesuan. 
+
+Zalantzak edo oharrak zuzenean niri korreoz, arren: *juan* puntu *abasolo* abildua *ehu* puntu *eus*
 

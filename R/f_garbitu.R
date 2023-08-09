@@ -25,31 +25,30 @@
 f_garbitu <- function(objektua,
                       copypaste = FALSE, n = 7,
                       hutsa = TRUE,
-                      ni = TRUE, nirea = 'a.WqkJLdiHlrEQ40Fl'){
-    if(is.data.frame(objektua)){
-        df <- objektua
-    } else if(is.list(objektua)){
-        df <- objektua$df_aldaketak
-    }
-    if (copypaste == TRUE){
-        df <- df |>
-            filter(bank_luzera<=n)
-    }
-    if (hutsa == TRUE){
-        df <- df |>
-            filter(author!="")
-    }
-    if (ni == TRUE){
-        df <- df |>
-            filter(author!= nirea)
-    }
-    if(is.data.frame(objektua)){
-        objektua <- df
-        return(objektua)
-    }
-    if(is.list(objektua)){
-        objektua$df_aldaketak <- df
-        return(objektua)
-    }
-
+                      ni = TRUE, nirea = "a.WqkJLdiHlrEQ40Fl") {
+  if (is.data.frame(objektua)) {
+    df <- objektua
+  } else if (is.list(objektua)) {
+    df <- objektua$df_aldaketak
+  }
+  if (copypaste == TRUE) {
+    df <- df |>
+      filter(bank_luzera <= n)
+  }
+  if (hutsa == TRUE) {
+    df <- df |>
+      filter(author != "")
+  }
+  if (ni == TRUE) {
+    df <- df |>
+      filter(author != nirea)
+  }
+  if (is.data.frame(objektua)) {
+    objektua <- df
+    return(objektua)
+  }
+  if (is.list(objektua)) {
+    objektua$df_aldaketak <- df
+    return(objektua)
+  }
 }

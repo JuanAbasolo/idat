@@ -29,7 +29,7 @@ Etherpad @greenspan2008 erabilita jaits daitekeen `.etherpad` luzapeneko fitxate
 Honek oinarrizko eraldaketa egiten du idazkuntza prozesua aztertzeko. Horretarako `etherpad` fitxategiak lokalean egon behar dueta haren kokapena eman behar zaio zati bitan: `kokapena` argudioak diotso zein karpetatan dagoen eta `fitxategia` argudioak fitxategiaren beraren izena. Barne funtzio batez elkarrekin lotzen ditu prozesamendua egiteko.
 
 ```{r}
-o_idat <- f_IDAT('../inst/extdata/', 'txepetx-2-lo1uvq90o.etherpad')
+o_idat <- f_IDAT("../inst/extdata/", "txepetx-2-lo1uvq90o.etherpad")
 ```
 
 Funtzioaren irteeran `list()` erako elementu bat jasotzen da bost elementu dituena:
@@ -97,13 +97,14 @@ Aurreko `f_IDAT()` funtzioak sortutako objektua iragazteko funtzioa. Garbitzeko 
 #| warning: false
 require(magrittr)
 
-o_idat$df_aldaketak |> 
-    nrow()
+o_idat$df_aldaketak |>
+  nrow()
 
 require(magrittr)
 o_idat |>
-    f_garbitu(copypaste = TRUE) %>% `[[`('df_aldaketak') |> 
-    nrow()
+  f_garbitu(copypaste = TRUE) %>%
+  `[[`("df_aldaketak") |>
+  nrow()
 ```
 
 ## Egileak identifikatzeko hainbat bide: `f_IDentifikau()` funtzioa
@@ -123,11 +124,11 @@ Aldagai horretako balioak har ditzake irizpide batzuen arabera:
 ```{r}
 require(dplyr)
 o_idat$df_aldaketak |>
-    select(author) |>
-    head(10)
+  select(author) |>
+  head(10)
 f_IDentifikau(o_idat, anonimu = TRUE)$df_aldaketak |>
-    select(egileak) |>
-    head(10)
+  select(egileak) |>
+  head(10)
 ```
 
 ## Egileek jarraian idatzitakoak identifikatzeko: `f_ekitaldiak()` funtzioa
@@ -136,12 +137,12 @@ Funtzio honek aldagai bat gehitzen dio `f_IDAT()` funtzioak sortutako objektuko 
 
 ```{r}
 # o_idat <- f_IDAT(fitxategia, kokapena)
-f_ekitaldiak(o_idat$df_aldaketak) |> 
-    group_by(ekitaldia) |> 
-    filter(n()>4) |> 
-    ungroup() |> 
-    select(ekitaldia, charBank) |> 
-    tail(10)
+f_ekitaldiak(o_idat$df_aldaketak) |>
+  group_by(ekitaldia) |>
+  filter(n() > 4) |>
+  ungroup() |>
+  select(ekitaldia, charBank) |>
+  tail(10)
 ```
 
 ## Idazkuntza prozesua etiketatzeko hainbat bide: `f_idatzia()` funtzioa
@@ -162,12 +163,16 @@ Egile baten testuaren azterketa inkrementala.
 require(stringr)
 
 f_idatzia(o_idat$df_aldaketak,
-          lerru = F, etenak = F, ezabatuak = F, copypaste = F, lerroko_jauziak = F) |> suppressWarnings() |> 
-    filter(egileak == levels(egileak)[3]) |> 
-    select(idatzia) |> unlist() |> unname() |> 
-    paste(collapse = "") |> 
-    str_replace_all('\n\n\n', '\n\n') |> 
-    cat()
+  lerru = F, etenak = F, ezabatuak = F, copypaste = F, lerroko_jauziak = F
+) |>
+  suppressWarnings() |>
+  filter(egileak == levels(egileak)[3]) |>
+  select(idatzia) |>
+  unlist() |>
+  unname() |>
+  paste(collapse = "") |>
+  str_replace_all("\n\n\n", "\n\n") |>
+  cat()
 ```
 
 #### Lerroen informazioa
@@ -176,12 +181,16 @@ f_idatzia(o_idat$df_aldaketak,
 #| echo: fenced
 #| output: asis
 f_idatzia(o_idat$df_aldaketak,
-          lerru = T, etenak = F, ezabatuak = F, copypaste = F, lerroko_jauziak = F) |> suppressWarnings() |> 
-    filter(egileak == levels(egileak)[3]) |> 
-    select(idatzia) |> unlist() |> unname() |> 
-    paste(collapse = "") |> 
-    str_replace_all('\n\n\n', '\n\n') |> 
-    cat()
+  lerru = T, etenak = F, ezabatuak = F, copypaste = F, lerroko_jauziak = F
+) |>
+  suppressWarnings() |>
+  filter(egileak == levels(egileak)[3]) |>
+  select(idatzia) |>
+  unlist() |>
+  unname() |>
+  paste(collapse = "") |>
+  str_replace_all("\n\n\n", "\n\n") |>
+  cat()
 ```
 
 #### Etenak, 20 seg
@@ -191,13 +200,18 @@ Bost segundutik gorako etenak markatuta. Ustez, testuaren antolaketari begirakoa
 ```{r}
 #| echo: fenced
 #| output: asis
-f_idatzia(o_idat$df_aldaketak, lerru = F, etenak = T, dm = 20000,
-          ezabatuak = F, copypaste = F, lerroko_jauziak = F) |> suppressWarnings() |> 
-    filter(egileak == levels(egileak)[3]) |> 
-    select(idatzia) |> unlist() |> unname() |> 
-    paste(collapse = "") |> 
-    str_replace_all('\n\n\n', '\n\n') |> 
-    cat()
+f_idatzia(o_idat$df_aldaketak,
+  lerru = F, etenak = T, dm = 20000,
+  ezabatuak = F, copypaste = F, lerroko_jauziak = F
+) |>
+  suppressWarnings() |>
+  filter(egileak == levels(egileak)[3]) |>
+  select(idatzia) |>
+  unlist() |>
+  unname() |>
+  paste(collapse = "") |>
+  str_replace_all("\n\n\n", "\n\n") |>
+  cat()
 ```
 
 #### Ezabatuak
@@ -206,14 +220,19 @@ Ezabaketen markak (eta etenak 3 segundura)
 
 ```{r}
 #| output: asis
-f_idatzia(o_idat$df_aldaketak, lerru = F, 
-          etenak = F, dm = 3000, ezabatuak = T,
-          copypaste = F, lerroko_jauziak = F) |> suppressWarnings() |> 
-    filter(egileak == levels(egileak)[3]) |> 
-    select(idatzia) |> unlist() |> unname() |> 
-    paste(collapse = "") |> 
-    str_replace_all('\n\n\n', '\n\n') |> 
-    cat()
+f_idatzia(o_idat$df_aldaketak,
+  lerru = F,
+  etenak = F, dm = 3000, ezabatuak = T,
+  copypaste = F, lerroko_jauziak = F
+) |>
+  suppressWarnings() |>
+  filter(egileak == levels(egileak)[3]) |>
+  select(idatzia) |>
+  unlist() |>
+  unname() |>
+  paste(collapse = "") |>
+  str_replace_all("\n\n\n", "\n\n") |>
+  cat()
 ```
 
 #### Copy+Paste
@@ -222,14 +241,19 @@ Beste nonbaitetik ekarritako testuak nabarmenduta
 
 ```{r}
 #| output: asis
-f_idatzia(o_idat$df_aldaketak, lerru = F, 
-          etenak = F, dm = 20000, ezabatuak = F, copypaste = T,
-           lerroko_jauziak = F) |> suppressWarnings() |> 
-    filter(egileak == levels(egileak)[3]) |> 
-    select(idatzia) |> unlist() |> unname() |> 
-    paste(collapse = "") |> 
-    str_replace_all('\n\n\n', '\n\n') |> 
-    cat()
+f_idatzia(o_idat$df_aldaketak,
+  lerru = F,
+  etenak = F, dm = 20000, ezabatuak = F, copypaste = T,
+  lerroko_jauziak = F
+) |>
+  suppressWarnings() |>
+  filter(egileak == levels(egileak)[3]) |>
+  select(idatzia) |>
+  unlist() |>
+  unname() |>
+  paste(collapse = "") |>
+  str_replace_all("\n\n\n", "\n\n") |>
+  cat()
 ```
 
 #### Lerro barruko jauziak
@@ -238,14 +262,19 @@ Lerro barruan idazleak egindako saltuk nabarmentzeko. Ez da zorrotza egile askok
 
 ```{r}
 #| output: asis
-f_idatzia(o_idat$df_aldaketak, lerru = T,
-          etenak = F, dm = 20000, 
-          ezabatuak = F, copypaste = F, lerroko_jauziak = T) |> suppressWarnings() |> 
-    filter(egileak == levels(egileak)[3]) |> 
-    select(idatzia) |> unlist() |> unname() |> 
-    paste(collapse = "") |> 
-    str_replace_all('\n\n\n', '\n') |> 
-    cat()
+f_idatzia(o_idat$df_aldaketak,
+  lerru = T,
+  etenak = F, dm = 20000,
+  ezabatuak = F, copypaste = F, lerroko_jauziak = T
+) |>
+  suppressWarnings() |>
+  filter(egileak == levels(egileak)[3]) |>
+  select(idatzia) |>
+  unlist() |>
+  unname() |>
+  paste(collapse = "") |>
+  str_replace_all("\n\n\n", "\n") |>
+  cat()
 ```
 
 ## Bestelako funtzioak

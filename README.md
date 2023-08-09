@@ -1,21 +1,25 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# IDAT
+# IDAT <img src="man/figures/logo.png" align="right" height="138" alt="" />
 
 <!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 IDAT (*Idazketan Aztertzeko Tresna*) erabil daiteke idazkuntza prozesua
-aztertzeko, Etherpad instantzia batean idatzitakoa aztertu eta
-analizatzeko.
+aztertzeko, [Etherpad](https://etherpad.org/) instantzia batean
+idatzitakoa aztertu eta analizatzeko.
 
-`.etherpad` fitxategiko datuak antolatzeko balio du horien informazioa
+`.etherpad` fitxategiko datuak antolatzeko balio du, horien informazioa
 aztertzeko.
 
 ## Instalatzea
 
-You can install the development version of IDAT like so:
+IDAT paketea GitLabeko [biltegi](https://gitlab.com/JuanAbasolo/idat)tik
+jaitsita instala dezakezu.
 
 ``` r
 remotes::install_gitlab('JuanAbasolo/idat')
@@ -27,8 +31,8 @@ Oinarrizko erabileraren adibidea.
 
 ``` r
 library(IDAT)
-kokapena <- 'inst/extdata/'
-fitxategia <- 'txepetx-2-lo1uvq90o.etherpad'
+kokapena <- "inst/extdata/"
+fitxategia <- "txepetx-2-lo1uvq90o.etherpad"
 o_idat <- f_IDAT(kokapena, fitxategia)
 ```
 
@@ -69,18 +73,22 @@ informazio hori ezabatzeko `f_garbitu` erabil daiteke.
 
 ``` r
 require(dplyr) |> suppressMessages()
-o_idat$df_aldaketak |> 
-    summarise(egile_kopurua = unique(author) |> length(),
-              pausu_kopurua = n())
+o_idat$df_aldaketak |>
+  summarise(
+    egile_kopurua = unique(author) |> length(),
+    pausu_kopurua = n()
+  )
 #> # A tibble: 1 × 2
 #>   egile_kopurua pausu_kopurua
 #>           <int>         <int>
 #> 1             7          1771
 
-o_idat$df_aldaketak |> 
-    f_garbitu() |> 
-    summarise(egile_kopurua = unique(author) |> length(),
-              pausu_kopurua = n())
+o_idat$df_aldaketak |>
+  f_garbitu() |>
+  summarise(
+    egile_kopurua = unique(author) |> length(),
+    pausu_kopurua = n()
+  )
 #> # A tibble: 1 × 2
 #>   egile_kopurua pausu_kopurua
 #>           <int>         <int>
@@ -95,9 +103,9 @@ identifikatu daitezke edo anonimotasunean landu ere bai. Horretarako
 f_IDentifikau funtzioa erabili behar da
 
 ``` r
-o_idat$df_aldaketak |> 
-    group_by(name) |> 
-    summarise(aldaketa_kopurua = n())
+o_idat$df_aldaketak |>
+  group_by(name) |>
+  summarise(aldaketa_kopurua = n())
 #> # A tibble: 7 × 2
 #>   name                 aldaketa_kopurua
 #>   <fct>                           <int>
@@ -109,19 +117,19 @@ o_idat$df_aldaketak |>
 #> 6 "Xabier Paez"                     205
 #> 7  <NA>                               3
 
-o_idat$df_aldaketak |> 
-    f_IDentifikau(anonimu = TRUE) |> 
-    group_by(egileak) |> 
-    summarise(aldaketa_kopurua = n())
+o_idat$df_aldaketak |>
+  f_IDentifikau(anonimu = TRUE) |>
+  group_by(egileak) |>
+  summarise(aldaketa_kopurua = n())
 #> # A tibble: 7 × 2
 #>   egileak aldaketa_kopurua
 #>   <fct>              <int>
-#> 1 E-1                  579
-#> 2 E-2                  206
-#> 3 E-3                    3
-#> 4 E-4                    2
-#> 5 E-5                  205
-#> 6 E-6                  342
+#> 1 E-1                    2
+#> 2 E-2                  205
+#> 3 E-3                  206
+#> 4 E-4                  342
+#> 5 E-5                  579
+#> 6 E-6                    3
 #> 7 E-7                  434
 ```
 
@@ -144,15 +152,19 @@ funtzioa erabiliaz.
 
 ``` r
 library(stringr) |> suppressMessages()
-f_idatzia(o_idat$df_aldaketak, lerru = TRUE, 
-          etenak = TRUE, dm = 2000, 
-          ezabatuak = TRUE, copypaste = TRUE,
-          lerroko_jauziak = TRUE) |> # suppressWarnings() |> 
-    filter(egileak == levels(egileak)[3]) |> 
-    select(idatzia) |> unlist() |> unname() |> 
-    paste(collapse = "") |> 
-    str_replace_all('\n\n\n', '\n\n') |> 
-    cat()
+f_idatzia(o_idat$df_aldaketak,
+  lerru = TRUE,
+  etenak = TRUE, dm = 2000,
+  ezabatuak = TRUE, copypaste = TRUE,
+  lerroko_jauziak = TRUE
+) |> # suppressWarnings() |>
+  filter(egileak == levels(egileak)[3]) |>
+  select(idatzia) |>
+  unlist() |>
+  unname() |>
+  paste(collapse = "") |>
+  str_replace_all("\n\n\n", "\n\n") |>
+  cat()
 #> Warning in f_idatzia(o_idat$df_aldaketak, lerru = TRUE, etenak = TRUE, dm = 2000, : 
 #> Lerro arteko jauzietan eta lerro barrukoetan 26 datu galdu egon dira; beraz, horrenbeste marka falta daitekez
 #> Warning in f_idatzia(o_idat$df_aldaketak, lerru = TRUE, etenak = TRUE, dm = 2000, : Etenenen marketan ere, 7 datu falta dira; beraz, horrenbeste eten markatzeke egon daitekez
@@ -203,24 +215,23 @@ Hurrengoa talde lan baten irudia da.
 
 ``` r
 require(ggplot2) |> suppressMessages()
-# KODEA
-```
-
-``` r
 o_idat$df_aldaketak |>
-    f_garbitu() |> 
-    f_IDentifikau(anonimu = T) |> 
-    mutate(norabidea = ifelse(azktex=='<', 'kendu', 'gehitu')) |>
-    ggplot(aes(x = revs, y = kok_lerru, color = egileak)) +
-    geom_point(aes(size = newLen, shape = norabidea)) +
-    geom_line(lty = 3) + scale_y_reverse() +
-    labs(title = 'Testuaren eraikuntzaren topografia',
-         subtitle = 'Aldaketen kokapena eta egileak prozesuan',
-         y = 'Testuaren lerroa',
-         x = 'Testuaren eraikuntzaren urratsen hurrenkera',
-         color = 'Taldekidea',
-         size = 'Zenbat kar.',
-         shape = 'Norabidea')
+  f_garbitu() |>
+  f_IDentifikau(anonimu = T) |>
+  mutate(norabidea = ifelse(azktex == "<", "kendu", "gehitu")) |>
+  ggplot(aes(x = revs, y = kok_lerru, color = egileak)) +
+  geom_point(aes(size = newLen, shape = norabidea)) +
+  geom_line(lty = 3) +
+  scale_y_reverse() +
+  labs(
+    title = "Testuaren eraikuntzaren topografia",
+    subtitle = "Aldaketen kokapena eta egileak prozesuan",
+    y = "Testuaren lerroa",
+    x = "Testuaren eraikuntzaren urratsen hurrenkera",
+    color = "Taldekidea",
+    size = "Zenbat kar.",
+    shape = "Norabidea"
+  )
 ```
 
 <div class="figure">
@@ -232,5 +243,9 @@ Talde lan ez onegi baten topografia
 
 </div>
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+------------------------------------------------------------------------
+
+Argitaratzeko prozesuan.
+
+Zalantzak edo oharrak zuzenean niri korreoz, arren: *juan* puntu
+*abasolo* abildua *ehu* puntu *eus*

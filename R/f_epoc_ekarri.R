@@ -9,6 +9,6 @@
 # Barneko erabilerarako
 # epoc formatuko datak gure erara ekarteko
 # [zati 1000 be egin bihar da, baina ez dakit zergaitik]
-f_epoc_ekarri <- function(x){
-    as.POSIXct(x/1000, origin="1970-01-01")
+f_epoc_ekarri <- function(x) {
+  as.POSIXct(x / 1000, origin = "1970-01-01")
 }
