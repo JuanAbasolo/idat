@@ -124,13 +124,13 @@ o_idat$df_aldaketak |>
 #> # A tibble: 7 × 2
 #>   egileak aldaketa_kopurua
 #>   <fct>              <int>
-#> 1 E-1                    2
+#> 1 E-1                  206
 #> 2 E-2                  205
-#> 3 E-3                  206
-#> 4 E-4                  342
-#> 5 E-5                  579
+#> 3 E-3                  434
+#> 4 E-4                  579
+#> 5 E-5                  342
 #> 6 E-6                    3
-#> 7 E-7                  434
+#> 7 E-7                    2
 ```
 
 ## Idazkuntza prozesuko testua eta etiketatzea
