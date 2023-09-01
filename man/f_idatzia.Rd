@@ -41,9 +41,9 @@ require(dplyr)
 require(stringr)
 # o_idat <- f_IDAT(fitxategia, kokapena)
 f_idatzia(o_idat)$df_aldaketak |>
-    filter(egileak == levels(egileak)[2]) |>
-    select(idatzia) |>
-    unlist() |>
-    cat(sep = '')
+  filter(egileak == levels(egileak)[2]) |>
+  select(idatzia) |>
+  unlist() |>
+  cat(sep = "")
 
 }

@@ -2,6 +2,7 @@
 
 export(f_36_10era)
 export(f_IDAT)
+export(f_IDAT2)
 export(f_IDentifikau)
 export(f_ekitaldiak)
 export(f_epoc_ekarri)

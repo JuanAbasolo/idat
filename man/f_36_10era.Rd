@@ -16,6 +16,6 @@ Funtzinoiak 36an oinarritutako  \code{x} zenbakia sistema hamartarrera dakar.
 Funtzino hau behar da \code{f_idat} funtzino barruan.
 }
 \examples{
-f_36_10era('11')
-f_36_10era('ab2')
+f_36_10era("11")
+f_36_10era("ab2")
 }

@@ -36,7 +36,7 @@ Idazteko orduan egin diren ekitaldiak identifikatzen ditu
 require(dplyr)
 # o_idat <- f_IDAT(kokapena, fitxategia)
 f_IDentifikau(o_idat, anonimu = TRUE)$df_aldaketak |>
-    select(egileak) |>
-    head(10)
+  select(egileak) |>
+  head(10)
 
 }
